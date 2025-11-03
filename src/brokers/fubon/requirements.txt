@@ -1,0 +1,18 @@
+# Fubon Securities API Implementation Requirements
+# 富邦證券 API 實作相依套件
+
+# Core dependency - Fubon Neo SDK
+fubon-neo>=0.3.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# Logging enhancement (optional)
+colorlog>=6.7.0
+
+# Development dependencies (optional)
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+# black>=23.0.0
+# flake8>=6.0.0
+# mypy>=1.0.0
