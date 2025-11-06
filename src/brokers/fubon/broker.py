@@ -75,6 +75,8 @@ class FubonBroker:
             # 使用 person_id 或 user_id (兩者同義)
             personal_id = person_id or user_id
             logger.info(f"Attempting to login with personal_id: {personal_id}")
+            logger.info(f"cert_path: {cert_path}")
+            logger.info(f"cert_pass provided: {'Yes' if cert_pass else 'No (empty)'}")
             
             self.sdk = FubonSDK()
             
