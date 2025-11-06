@@ -1,0 +1,24 @@
+nohup: ignoring input
+INFO:     Will watch for changes in these directories: ['/home/jarvis/project/idea/stock.order/api']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [655269] using WatchFiles
+INFO:     Started server process [655314]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:41194 - "POST /api/v1/auth/upload-cert HTTP/1.1" 400 Bad Request
+2025-11-06 16:20:24,916 - routers.auth - INFO - Certificate uploaded: /home/jarvis/project/idea/stock.order/api/uploaded_certs/4662092c44364134b0a91fdc907c9dc2_test.pfx
+INFO:     127.0.0.1:36878 - "POST /api/v1/auth/upload-cert HTTP/1.1" 200 OK
+2025-11-06 16:20:46,561 - routers.auth - INFO - Certificate uploaded: /home/jarvis/project/idea/stock.order/api/uploaded_certs/29078731f1694678a8f59dfcaa0576d0_R124443566.pfx
+INFO:     127.0.0.1:38238 - "POST /api/v1/auth/upload-cert HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38238 - "OPTIONS /api/v1/auth/login HTTP/1.1" 200 OK
+2025-11-06 16:20:49,204 - dependencies - INFO - Creating Real FubonBroker for session default
+2025-11-06 16:20:49,204 - src.brokers.fubon.broker - INFO - FubonBroker initialized
+2025-11-06 16:20:49,264 - src.brokers.fubon.broker - INFO - Attempting to login with personal_id: R124443566
+2025-11-06 16:20:49,828 - src.brokers.fubon.broker - ERROR - Login failed: certificate key error
+INFO:     127.0.0.1:38244 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+2025-11-06 16:21:16,038 - src.brokers.fubon.broker - INFO - Attempting to login with personal_id: R124443566
+2025-11-06 16:21:16,640 - src.brokers.fubon.broker - ERROR - Login failed: certificate key error
+INFO:     127.0.0.1:46712 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+2025-11-06 16:21:17,795 - src.brokers.fubon.broker - INFO - Attempting to login with personal_id: R124443566
+2025-11-06 16:21:18,364 - src.brokers.fubon.broker - ERROR - Login failed: certificate key error
+INFO:     127.0.0.1:46712 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
