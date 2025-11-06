@@ -1,0 +1,44 @@
+.market-panel {
+  /* Market specific styles */
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.price {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.text-success {
+  color: #ff4d4f;  /* 台股習慣：紅色表示上漲 */
+  font-weight: 600;
+}
+
+.text-danger {
+  color: #52c41a;  /* 台股習慣：綠色表示下跌 */
+  font-weight: 600;
+}
+
+.no-data {
+  text-align: center;
+  color: #999;
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+  }
+
+  .button-group .btn {
+    width: 100%;
+  }
+}

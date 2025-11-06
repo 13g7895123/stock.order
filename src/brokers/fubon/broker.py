@@ -25,6 +25,7 @@ class FubonBroker:
         self.is_logged_in = False
         self.user_id = None
         self.realtime_initialized = False
+        self.mock_mode = False  # Mock 模式標記
         
         # 回調函數存儲
         self.quote_callbacks: Dict[str, List[Callable]] = {}
@@ -37,16 +38,18 @@ class FubonBroker:
         user_id: str,
         password: str,
         cert_path: str,
-        person_id: Optional[str] = None
+        person_id: Optional[str] = None,
+        cert_pass: str = ''
     ) -> bool:
         """
         登入富邦證券帳戶
         
         Args:
-            user_id: 使用者帳號
+            user_id: 使用者帳號 (會轉為 personal_id)
             password: 密碼
             cert_path: 憑證路徑
-            person_id: 身分證字號(選填)
+            person_id: 身分證字號(選填，與 user_id 同義)
+            cert_pass: 憑證密碼(選填)
         
         Returns:
             bool: 登入是否成功
@@ -56,32 +59,40 @@ class FubonBroker:
         """
         try:
             # 延遲導入以避免未安裝時的錯誤
-            from fubon_neo.sdk import FubonSDK
+            try:
+                from fubon_neo.sdk import FubonSDK
+                self.mock_mode = False
+            except ImportError:
+                # 使用 Mock 模式
+                logger.warning("fubon-neo not installed, using Mock mode")
+                self.mock_mode = True
+                self.is_logged_in = True
+                self.user_id = user_id
+                return True
             
-            logger.info(f"Attempting to login with user_id: {user_id}")
+            # 使用 person_id 或 user_id (兩者同義)
+            personal_id = person_id or user_id
+            logger.info(f"Attempting to login with personal_id: {personal_id}")
             
             self.sdk = FubonSDK()
             
-            # 登入參數
-            login_params = {
-                'user_id': user_id,
-                'password': password,
-                'cert_path': cert_path
-            }
+            # fubon-neo SDK 使用 personal_id 和 pass (注意不是 password!)
+            result = self.sdk.login(
+                personal_id,  # 位置參數 1
+                password,     # 位置參數 2 (SDK內部叫 pass)
+                cert_path,    # 位置參數 3
+                cert_pass     # 位置參數 4
+            )
             
-            if person_id:
-                login_params['person_id'] = person_id
-            
-            # 執行登入
-            result = self.sdk.login(**login_params)
-            
-            if result:
+            if result and result.is_success:
                 self.is_logged_in = True
                 self.user_id = user_id
-                logger.info(f"Successfully logged in as {user_id}")
+                logger.info(f"Successfully logged in as {personal_id}")
+                logger.info(f"Accounts: {result.data}")
                 return True
             else:
-                logger.error("Login failed")
+                error_msg = result.message if result else "Unknown error"
+                logger.error(f"Login failed: {error_msg}")
                 return False
                 
         except ImportError:

@@ -1,0 +1,65 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: #1890ff;
+}
+
+.tab.active {
+  color: #1890ff;
+  border-bottom-color: #1890ff;
+  font-weight: 600;
+}
+
+.tab-content {
+  flex: 1;
+}
+
+/* Footer */
+.footer {
+  background: white;
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #e0e0e0;
+  margin-top: auto;
+  color: #666;
+  font-size: 14px;
+}
+
+.footer p {
+  margin: 5px 0;
+}
+
+/* 響應式 */
+@media (max-width: 768px) {
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .tab {
+    white-space: nowrap;
+  }
+}

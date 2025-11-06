@@ -1,0 +1,12 @@
+# FastAPI 相關
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# 富邦證券 SDK (已安裝 Linux 版本)
+# fubon-neo==2.2.5  # 已從 docs/fubon_neo-2.2.5-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl 安裝
+
+# 其他依賴
+python-dotenv==1.0.0
