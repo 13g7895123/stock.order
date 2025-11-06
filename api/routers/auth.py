@@ -3,9 +3,12 @@ Authentication Router
 認證相關 API 端點
 """
 
-from fastapi import APIRouter, HTTPException, Depends, status
-from typing import Dict, Any
 import logging
+import os
+from pathlib import Path
+from uuid import uuid4
+
+from fastapi import APIRouter, HTTPException, status, UploadFile, File
 
 from schemas import LoginRequest, LoginResponse, SuccessResponse
 from dependencies import get_broker_instance, cleanup_broker_instance
@@ -13,6 +16,53 @@ from dependencies import get_broker_instance, cleanup_broker_instance
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+CERT_UPLOAD_DIR = Path(
+    os.getenv(
+        "CERT_UPLOAD_DIR",
+        Path(__file__).resolve().parent.parent / "uploaded_certs"
+    )
+)
+CERT_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+
+@router.post("/upload-cert", summary="上傳憑證檔案")
+async def upload_certificate(certificate: UploadFile = File(...)):
+    """接收並儲存憑證檔案，返回伺服器上的儲存路徑。"""
+    try:
+        original_name = certificate.filename or ""
+        suffix = Path(original_name).suffix.lower()
+
+        if suffix not in {".pfx", ".p12"}:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="僅支援上傳 .pfx 或 .p12 憑證檔案"
+            )
+
+        unique_name = f"{uuid4().hex}_{Path(original_name).name}"
+        destination = CERT_UPLOAD_DIR / unique_name
+
+        file_bytes = await certificate.read()
+        destination.write_bytes(file_bytes)
+
+        logger.info("Certificate uploaded: %s", destination)
+
+        return {
+            "success": True,
+            "message": "憑證上傳成功",
+            "cert_path": str(destination)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:  # pragma: no cover - defensive logging
+        logger.error("Certificate upload error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"憑證上傳失敗: {exc}"
+        )
+    finally:
+        await certificate.close()
 
 
 @router.post("/login", response_model=LoginResponse, summary="登入")

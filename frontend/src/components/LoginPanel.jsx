@@ -1,68 +1,116 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import api from '../api';
 import './LoginPanel.css';
 
-function LoginPanel({ onLogin, loading, currentEnv }) {
+function LoginPanel({ onLogin, loading }) {
   const [formData, setFormData] = useState({
-    user_id: 'test_user',
-    password: 'test_password',
-    cert_path: '/tmp/test.pfx',
-    person_id: '',
-    cert_password: ''
+    user_id: '',
+    password: '',
+    cert_password: '',
+    cert_path: '',
+    person_id: ''
   });
-  const [certFile, setCertFile] = useState(null);
   const [message, setMessage] = useState(null);
-  const [uploadMethod, setUploadMethod] = useState('path'); // 'path' or 'file'
+  const [uploadMethod, setUploadMethod] = useState('file');
+  const [certFile, setCertFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCertFile(file);
-      // 實際應用中，這裡需要將檔案上傳到後端
-      // 暫時使用檔案名稱作為路徑
-      setFormData({
-        ...formData,
-        cert_path: `/uploaded/${file.name}`
-      });
+  const handleFileUpload = async (file) => {
+    if (!file) {
+      return;
+    }
+
+    setMessage(null);
+    setCertFile(file);
+    setUploading(true);
+
+    try {
+      const response = await api.uploadCertificate(file);
+
+      if (response.success && response.cert_path) {
+        setFormData((prev) => ({
+          ...prev,
+          cert_path: response.cert_path
+        }));
+
+        setMessage({
+          type: 'success',
+          text: `憑證已上傳：${file.name}`
+        });
+      } else {
+        setMessage({
+          type: 'error',
+          text: response?.message || '憑證上傳失敗，請再試一次'
+        });
+        setCertFile(null);
+      }
+    } catch (error) {
+      console.error('Certificate upload error:', error);
       setMessage({
-        type: 'info',
-        text: `已選擇憑證檔案: ${file.name} (實際使用時需上傳到伺服器)`
+        type: 'error',
+        text: error.response?.data?.detail || error.message || '憑證上傳失敗'
       });
+      setCertFile(null);
+      setFormData((prev) => ({
+        ...prev,
+        cert_path: ''
+      }));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
     if (file) {
-      setCertFile(file);
-      setFormData({
-        ...formData,
-        cert_path: `/uploaded/${file.name}`
-      });
-      setMessage({
-        type: 'info',
-        text: `已選擇憑證檔案: ${file.name}`
-      });
+      handleFileUpload(file);
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMethodChange = (value) => {
+    setUploadMethod(value);
+    if (value === 'path') {
+      setCertFile(null);
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setMessage(null);
 
+    if (!formData.cert_path) {
+      setMessage({
+        type: 'error',
+        text: '請先上傳憑證檔案或輸入憑證路徑'
+      });
+      return;
+    }
+
     const result = await onLogin(formData);
-    
     setMessage({
       type: result.success ? 'success' : 'error',
       text: result.message
@@ -75,7 +123,7 @@ function LoginPanel({ onLogin, loading, currentEnv }) {
         <div className="login-header">
           <h2>🔐 登入富邦證券</h2>
           <p className="text-muted">
-            {currentEnv === 'test' ? '測試模式：可使用任意帳號密碼登入' : '正式模式：需要真實的帳號和憑證'}
+            請輸入真實帳號、密碼與憑證資訊以連線至富邦 Neo SDK
           </p>
         </div>
 
@@ -125,47 +173,85 @@ function LoginPanel({ onLogin, loading, currentEnv }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">憑證密碼 {currentEnv === 'production' ? '*' : ''}</label>
+            <label className="form-label">憑證密碼 *</label>
             <input
               type="password"
               name="cert_password"
               className="form-input"
               value={formData.cert_password}
               onChange={handleChange}
-              placeholder={currentEnv === 'production' ? '正式環境必填' : '測試環境可留空'}
-              required={currentEnv === 'production'}
+              required
+              placeholder="請輸入憑證密碼"
             />
             <small className="form-help">
-              正式環境登入需要提供對應的憑證密碼
+              正式環境登入必須提供憑證密碼
             </small>
           </div>
 
-          {/* 憑證上傳方式選擇 */}
           <div className="form-group">
-            <label className="form-label">憑證設定方式</label>
+            <label className="form-label">憑證取得方式</label>
             <div className="radio-group">
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  value="path"
-                  checked={uploadMethod === 'path'}
-                  onChange={(e) => setUploadMethod(e.target.value)}
-                />
-                輸入憑證路徑
-              </label>
               <label className="radio-label">
                 <input
                   type="radio"
                   value="file"
                   checked={uploadMethod === 'file'}
-                  onChange={(e) => setUploadMethod(e.target.value)}
+                  onChange={(event) => handleMethodChange(event.target.value)}
                 />
                 上傳憑證檔案
+              </label>
+              <label className="radio-label">
+                <input
+                  type="radio"
+                  value="path"
+                  checked={uploadMethod === 'path'}
+                  onChange={(event) => handleMethodChange(event.target.value)}
+                />
+                輸入伺服器路徑
               </label>
             </div>
           </div>
 
-          {uploadMethod === 'path' ? (
+          {uploadMethod === 'file' ? (
+            <div className="form-group">
+              <label className="form-label">上傳憑證檔案 *</label>
+              <div
+                className={`file-upload ${certFile ? 'active' : ''}`}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pfx,.p12"
+                  onChange={handleFileChange}
+                />
+                {uploading ? (
+                  <div>
+                    <span className="loading"></span>
+                    <p>上傳中，請稍候...</p>
+                  </div>
+                ) : certFile ? (
+                  <div>
+                    <p>✓ 已選擇檔案</p>
+                    <p className="file-name">{certFile.name}</p>
+                    <small>點擊或重新拖曳以更換檔案</small>
+                  </div>
+                ) : (
+                  <div>
+                    <p>📁 點擊選擇檔案或拖曳至此</p>
+                    <small>支援 .pfx, .p12 格式</small>
+                  </div>
+                )}
+              </div>
+              {formData.cert_path && (
+                <small className="form-help">
+                  憑證儲存路徑：{formData.cert_path}
+                </small>
+              )}
+            </div>
+          ) : (
             <div className="form-group">
               <label className="form-label">憑證路徑 *</label>
               <input
@@ -178,48 +264,16 @@ function LoginPanel({ onLogin, loading, currentEnv }) {
                 placeholder="/path/to/certificate.pfx"
               />
               <small className="form-help">
-                請輸入伺服器上憑證檔案的完整路徑
-              </small>
-            </div>
-          ) : (
-            <div className="form-group">
-              <label className="form-label">上傳憑證檔案 *</label>
-              <div
-                className={`file-upload ${certFile ? 'active' : ''}`}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onClick={() => document.getElementById('cert-file').click()}
-              >
-                <input
-                  id="cert-file"
-                  type="file"
-                  accept=".pfx,.p12"
-                  onChange={handleFileChange}
-                />
-                {certFile ? (
-                  <div>
-                    <p>✓ 已選擇檔案</p>
-                    <p className="file-name">{certFile.name}</p>
-                    <small>點擊重新選擇</small>
-                  </div>
-                ) : (
-                  <div>
-                    <p>📁 點擊選擇檔案或拖曳至此</p>
-                    <small>支援 .pfx, .p12 格式</small>
-                  </div>
-                )}
-              </div>
-              <small className="form-help">
-                ⚠️ 測試模式下檔案不會真的上傳，僅用於演示
+                請輸入後端伺服器可存取的憑證檔案完整路徑
               </small>
             </div>
           )}
 
           <div className="form-actions">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary btn-block"
-              disabled={loading}
+              disabled={loading || uploading}
             >
               {loading ? (
                 <>
@@ -236,10 +290,10 @@ function LoginPanel({ onLogin, loading, currentEnv }) {
         <div className="login-tips">
           <h4>💡 使用提示</h4>
           <ul>
-            <li><strong>測試模式</strong>：任意帳號密碼即可登入，使用 Mock 資料</li>
-            <li><strong>正式模式</strong>：需要真實的富邦證券帳號和憑證檔案</li>
-            <li>憑證檔案格式：.pfx 或 .p12</li>
-            <li>登入後可以測試所有 API 功能</li>
+            <li>需要真實的富邦證券帳號與對應憑證檔案 (.pfx / .p12)</li>
+            <li>可直接上傳憑證檔案，系統會提供伺服器上的儲存路徑</li>
+            <li>若伺服器已存在憑證，也可以改用輸入路徑的方式登入</li>
+            <li>登入成功後即可使用所有行情、帳戶與交易功能</li>
           </ul>
         </div>
       </div>

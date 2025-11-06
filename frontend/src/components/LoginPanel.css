@@ -28,7 +28,8 @@
 
 .radio-group {
   display: flex;
-  gap: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .radio-label {
@@ -36,10 +37,41 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  color: #333;
 }
 
 .radio-label input[type="radio"] {
   cursor: pointer;
+}
+
+.file-upload {
+  margin-top: 8px;
+  padding: 20px;
+  border: 2px dashed #cfcfcf;
+  border-radius: 6px;
+  text-align: center;
+  background: #fafafa;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.file-upload input {
+  display: none;
+}
+
+.file-upload:hover {
+  border-color: #1890ff;
+}
+
+.file-upload.active {
+  border-color: #1890ff;
+  background: #f0f7ff;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #1890ff;
+  margin: 5px 0;
 }
 
 .form-help {
@@ -47,12 +79,6 @@
   margin-top: 5px;
   color: #666;
   font-size: 12px;
-}
-
-.file-name {
-  font-weight: 600;
-  color: #1890ff;
-  margin: 5px 0;
 }
 
 .btn-block {

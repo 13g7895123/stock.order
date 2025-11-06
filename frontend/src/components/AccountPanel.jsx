@@ -35,6 +35,15 @@ function AccountPanel() {
     }
   };
 
+  const accountData = accountInfo?.data || {};
+  const balanceData = balance?.data || {};
+  const balanceValue = balance?.balance ?? balanceData.total_asset ?? 0;
+  const marketValue = balanceData.market_value ?? balanceData.total_market_value ?? 0;
+  const cashAvailable = balanceData.available_balance ?? balance?.balance ?? 0;
+  const buyingPower = balance?.buying_power ?? balanceData.buying_power ?? 0;
+  const profitLossData = profitLoss?.profit_loss || {};
+  const positionsList = positions?.positions || [];
+
   if (loading) {
     return (
       <div className="account-panel">
@@ -55,28 +64,28 @@ function AccountPanel() {
         <div className="card summary-card">
           <h3>💰 帳戶淨值</h3>
           <div className="summary-value">
-            {balance?.total_asset?.toLocaleString() || '0'} 元
+            {balanceValue?.toLocaleString?.() || Number(balanceValue || 0).toLocaleString()} 元
           </div>
         </div>
 
         <div className="card summary-card">
           <h3>📊 持股市值</h3>
           <div className="summary-value">
-            {balance?.market_value?.toLocaleString() || '0'} 元
+            {marketValue?.toLocaleString?.() || Number(marketValue || 0).toLocaleString()} 元
           </div>
         </div>
 
         <div className="card summary-card">
           <h3>💵 現金餘額</h3>
           <div className="summary-value">
-            {balance?.available_balance?.toLocaleString() || '0'} 元
+            {cashAvailable?.toLocaleString?.() || Number(cashAvailable || 0).toLocaleString()} 元
           </div>
         </div>
 
         <div className="card summary-card">
           <h3>📈 今日損益</h3>
-          <div className={`summary-value ${profitLoss?.today_pl >= 0 ? 'profit' : 'loss'}`}>
-            {profitLoss?.today_pl >= 0 ? '+' : ''}{profitLoss?.today_pl?.toLocaleString() || '0'} 元
+          <div className={`summary-value ${profitLossData.today_pl >= 0 ? 'profit' : 'loss'}`}>
+            {profitLossData.today_pl >= 0 ? '+' : ''}{profitLossData.today_pl?.toLocaleString?.() || Number(profitLossData.today_pl || 0).toLocaleString()} 元
           </div>
         </div>
       </div>
@@ -110,42 +119,42 @@ function AccountPanel() {
           <div className="info-grid">
             <div className="info-item">
               <label>帳戶代碼:</label>
-              <span>{accountInfo?.account_id || '-'}</span>
+              <span>{accountData.account_id || '-'}</span>
             </div>
             <div className="info-item">
               <label>帳戶類型:</label>
-              <span>{accountInfo?.account_type || '-'}</span>
+              <span>{accountData.account_type || '-'}</span>
             </div>
             <div className="info-item">
               <label>帳戶狀態:</label>
               <span className="badge badge-success">
-                {accountInfo?.status || '正常'}
+                {accountData.status || '正常'}
               </span>
             </div>
             <div className="info-item">
               <label>可用餘額:</label>
               <span className="highlight">
-                {balance?.available_balance?.toLocaleString() || '0'} 元
+                {cashAvailable?.toLocaleString?.() || Number(cashAvailable || 0).toLocaleString()} 元
               </span>
             </div>
             <div className="info-item">
               <label>購買力:</label>
-              <span>{balance?.buying_power?.toLocaleString() || '0'} 元</span>
+              <span>{buyingPower?.toLocaleString?.() || Number(buyingPower || 0).toLocaleString()} 元</span>
             </div>
             <div className="info-item">
               <label>持股總數:</label>
-              <span>{positions?.positions?.length || 0} 支</span>
+              <span>{positionsList.length} 支</span>
             </div>
             <div className="info-item">
               <label>今日損益:</label>
-              <span className={profitLoss?.today_pl >= 0 ? 'text-success' : 'text-danger'}>
-                {profitLoss?.today_pl >= 0 ? '+' : ''}{profitLoss?.today_pl?.toLocaleString() || '0'} 元
+              <span className={profitLossData.today_pl >= 0 ? 'text-success' : 'text-danger'}>
+                {profitLossData.today_pl >= 0 ? '+' : ''}{profitLossData.today_pl?.toLocaleString?.() || Number(profitLossData.today_pl || 0).toLocaleString()} 元
               </span>
             </div>
             <div className="info-item">
               <label>累計損益:</label>
-              <span className={profitLoss?.total_pl >= 0 ? 'text-success' : 'text-danger'}>
-                {profitLoss?.total_pl >= 0 ? '+' : ''}{profitLoss?.total_pl?.toLocaleString() || '0'} 元
+              <span className={profitLossData.total_pl >= 0 ? 'text-success' : 'text-danger'}>
+                {profitLossData.total_pl >= 0 ? '+' : ''}{profitLossData.total_pl?.toLocaleString?.() || Number(profitLossData.total_pl || 0).toLocaleString()} 元
               </span>
             </div>
           </div>
@@ -156,7 +165,7 @@ function AccountPanel() {
       {activeView === 'positions' && (
         <div className="card">
           <div className="card-header">持股明細</div>
-          {positions?.positions && positions.positions.length > 0 ? (
+          {positionsList.length > 0 ? (
             <div className="table-container">
               <table className="table">
                 <thead>
@@ -172,7 +181,7 @@ function AccountPanel() {
                   </tr>
                 </thead>
                 <tbody>
-                  {positions.positions.map((pos, index) => (
+                  {positionsList.map((pos, index) => (
                     <tr key={index}>
                       <td>{pos.stock_code}</td>
                       <td>{pos.stock_name}</td>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api, { ENV_CONFIG } from './api';
+import api from './api';
 import LoginPanel from './components/LoginPanel';
 import MarketPanel from './components/MarketPanel';
 import AccountPanel from './components/AccountPanel';
@@ -8,7 +8,6 @@ import Header from './components/Header';
 import './App.css';
 
 function App() {
-  const [currentEnv, setCurrentEnv] = useState('test');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
   const [activeTab, setActiveTab] = useState('market');
@@ -18,11 +17,6 @@ function App() {
   useEffect(() => {
     checkLoginStatus();
   }, []);
-
-  // 切換環境時更新 API base URL
-  useEffect(() => {
-    api.setBaseURL(ENV_CONFIG[currentEnv].baseURL);
-  }, [currentEnv]);
 
   const checkLoginStatus = async () => {
     try {
@@ -38,8 +32,7 @@ function App() {
   const handleLogin = async (credentials) => {
     setLoading(true);
     try {
-      // 傳遞當前環境給 login API
-      const result = await api.login(credentials, currentEnv);
+      const result = await api.login(credentials);
       if (result.success) {
         setIsLoggedIn(true);
         setUserInfo(result);
@@ -69,22 +62,9 @@ function App() {
     }
   };
 
-  const handleEnvChange = (env) => {
-    if (isLoggedIn) {
-      if (window.confirm('切換環境將會登出，是否繼續？')) {
-        handleLogout();
-        setCurrentEnv(env);
-      }
-    } else {
-      setCurrentEnv(env);
-    }
-  };
-
   return (
     <div className="app">
       <Header 
-        currentEnv={currentEnv}
-        onEnvChange={handleEnvChange}
         isLoggedIn={isLoggedIn}
         userInfo={userInfo}
         onLogout={handleLogout}
@@ -95,7 +75,6 @@ function App() {
           <LoginPanel 
             onLogin={handleLogin}
             loading={loading}
-            currentEnv={currentEnv}
           />
         ) : (
           <>
@@ -131,7 +110,7 @@ function App() {
 
       <footer className="footer">
         <p>富邦證券 API 測試工具 v1.0.0</p>
-        <p>當前環境: <span className="badge badge-info">{ENV_CONFIG[currentEnv].name}</span></p>
+        <p>連線位址: <span className="badge badge-info">{api.baseURL}</span></p>
       </footer>
     </div>
   );

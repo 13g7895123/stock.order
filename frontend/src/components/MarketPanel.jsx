@@ -17,12 +17,12 @@ function MarketPanel() {
       const codes = stockCodes.split(',').map(c => c.trim());
       const result = await api.getQuote(codes);
       setQuoteData(result);
-      setMessage({ type: 'success', text: '即時報價查詢成功！' });
+      setMessage({ type: 'success', text: result.message || '即時報價查詢成功！' });
     } catch (error) {
       console.error('查詢報價錯誤:', error);
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.error || '查詢失敗'
+        text: error.response?.data?.detail || error.response?.data?.error || '查詢失敗'
       });
     } finally {
       setLoading(false);
@@ -36,12 +36,12 @@ function MarketPanel() {
       const codes = stockCodes.split(',').map(c => c.trim());
       const result = await api.getHistoricalData(codes[0], 'D');
       setHistoricalData(result);
-      setMessage({ type: 'success', text: '歷史資料查詢成功！' });
+      setMessage({ type: 'success', text: result.message || '歷史資料查詢成功！' });
     } catch (error) {
       console.error('查詢歷史資料錯誤:', error);
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.error || '查詢失敗'
+        text: error.response?.data?.detail || error.response?.data?.error || '查詢失敗'
       });
     } finally {
       setLoading(false);
@@ -55,12 +55,12 @@ function MarketPanel() {
       const codes = stockCodes.split(',').map(c => c.trim());
       const result = await api.getIntradayData(codes[0]);
       setIntradayData(result);
-      setMessage({ type: 'success', text: '盤中資料查詢成功！' });
+      setMessage({ type: 'success', text: result.message || '盤中資料查詢成功！' });
     } catch (error) {
       console.error('查詢盤中資料錯誤:', error);
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.error || '查詢失敗'
+        text: error.response?.data?.detail || error.response?.data?.error || '查詢失敗'
       });
     } finally {
       setLoading(false);
@@ -73,15 +73,20 @@ function MarketPanel() {
     try {
       const codes = stockCodes.split(',').map(c => c.trim());
       const result = await api.subscribeQuote(codes);
+      const successCodes = (result.results || [])
+        .filter(item => item.success)
+        .map(item => item.stock_code);
       setMessage({ 
         type: 'success', 
-        text: `成功訂閱 ${result.subscribed?.join(', ')} 的即時報價`
+        text: successCodes.length > 0
+          ? `成功訂閱 ${successCodes.join(', ')} 的即時報價`
+          : result.message || '訂閱請求已送出'
       });
     } catch (error) {
       console.error('訂閱錯誤:', error);
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.error || '訂閱失敗'
+        text: error.response?.data?.detail || error.response?.data?.error || '訂閱失敗'
       });
     } finally {
       setLoading(false);

@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+const DEFAULT_BASE_URL =
+  import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000';
+
 // 建立 axios 實例
 const createApiClient = (baseURL) => {
   return axios.create({
@@ -26,13 +29,23 @@ class FubonAPI {
 
   // ========== 認證相關 ==========
   
-  async login(credentials, environment = 'test') {
-    // 根據環境設定 use_mock 參數
+  async login(credentials) {
     const loginData = {
       ...credentials,
-      use_mock: environment === 'test'  // 測試環境使用 Mock，正式環境使用真實 SDK
+      use_mock: false
     };
     const response = await this.client.post('/api/v1/auth/login', loginData);
+    return response.data;
+  }
+
+  async uploadCertificate(file) {
+    const formData = new FormData();
+    formData.append('certificate', file);
+    const response = await this.client.post('/api/v1/auth/upload-cert', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 
@@ -181,23 +194,7 @@ class FubonAPI {
   }
 }
 
-// 環境配置
-export const ENV_CONFIG = {
-  production: {
-    name: '正式環境',
-    baseURL: 'http://localhost:8000',
-    description: '使用真實 SDK（需安裝 fubon-neo）',
-    mode: 'production'
-  },
-  test: {
-    name: '測試環境',
-    baseURL: 'http://localhost:8000',
-    description: '使用 Mock 資料進行測試',
-    mode: 'test'
-  }
-};
-
-// 預設使用測試環境
-export const api = new FubonAPI(ENV_CONFIG.test.baseURL);
+// 單一環境設定 (正式環境)
+export const api = new FubonAPI(DEFAULT_BASE_URL);
 
 export default api;

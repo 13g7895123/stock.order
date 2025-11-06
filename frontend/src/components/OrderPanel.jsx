@@ -9,7 +9,8 @@ function OrderPanel() {
     price_type: 'LMT',
     price: '',
     quantity: 1000,
-    order_type: 'ROD'
+    order_type: 'ROD',
+    order_condition: 'Cash'
   });
   const [todayOrders, setTodayOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,9 +31,13 @@ function OrderPanel() {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
+    const nextValue =
+      name === 'quantity'
+        ? (value === '' ? '' : Number(value))
+        : value;
     setOrderForm({
       ...orderForm,
-      [name]: value
+      [name]: nextValue
     });
   };
 
@@ -45,7 +50,7 @@ function OrderPanel() {
       const result = await api.placeOrder(orderForm);
       setMessage({
         type: 'success',
-        text: `下單成功！訂單編號: ${result.order_id}`
+        text: result.message || `下單成功！訂單編號: ${result.order_id}`
       });
       // 重新載入今日委託
       await loadTodayOrders();
@@ -59,7 +64,7 @@ function OrderPanel() {
       console.error('下單錯誤:', error);
       setMessage({
         type: 'error',
-        text: error.response?.data?.error || '下單失敗'
+        text: error.response?.data?.detail || error.response?.data?.error || '下單失敗'
       });
     } finally {
       setLoading(false);
@@ -82,7 +87,7 @@ function OrderPanel() {
       console.error('取消訂單錯誤:', error);
       setMessage({
         type: 'error',
-        text: error.response?.data?.error || '取消失敗'
+        text: error.response?.data?.detail || error.response?.data?.error || '取消失敗'
       });
     }
   };
@@ -201,6 +206,21 @@ function OrderPanel() {
                 <option value="ROD">當日有效 (ROD)</option>
                 <option value="IOC">立即成交否則取消 (IOC)</option>
                 <option value="FOK">全部成交否則取消 (FOK)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">委託條件 *</label>
+              <select
+                name="order_condition"
+                className="form-select"
+                value={orderForm.order_condition}
+                onChange={handleFormChange}
+                required
+              >
+                <option value="Cash">現股</option>
+                <option value="MarginTrading">融資</option>
+                <option value="ShortSelling">融券</option>
               </select>
             </div>
           </div>
