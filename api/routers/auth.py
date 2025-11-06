@@ -42,7 +42,8 @@ async def login(
             user_id=request.user_id,
             password=request.password,
             cert_path=request.cert_path,
-            person_id=request.person_id
+            person_id=request.person_id,
+            cert_pass=request.cert_password or ""
         )
         
         mode_text = "Mock 模式（測試環境）" if request.use_mock else "真實 SDK（正式環境）"
@@ -54,11 +55,12 @@ async def login(
                 user_id=request.user_id,
                 session_id=session_id
             )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="登入失敗，請檢查帳號密碼"
-            )
+
+        error_detail = getattr(broker, "last_error", None)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=error_detail or "登入失敗，請檢查帳號密碼"
+        )
     
     except HTTPException:
         # 重新拋出 HTTPException（如 SDK 未安裝的 503 錯誤）

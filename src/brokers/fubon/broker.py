@@ -24,6 +24,7 @@ class FubonBroker:
         self.sdk = None
         self.is_logged_in = False
         self.user_id = None
+        self.last_error: Optional[str] = None
         self.realtime_initialized = False
         self.mock_mode = False  # Mock 模式標記
         
@@ -68,6 +69,7 @@ class FubonBroker:
                 self.mock_mode = True
                 self.is_logged_in = True
                 self.user_id = user_id
+                self.last_error = None
                 return True
             
             # 使用 person_id 或 user_id (兩者同義)
@@ -87,19 +89,23 @@ class FubonBroker:
             if result and result.is_success:
                 self.is_logged_in = True
                 self.user_id = user_id
+                self.last_error = None
                 logger.info(f"Successfully logged in as {personal_id}")
                 logger.info(f"Accounts: {result.data}")
                 return True
             else:
                 error_msg = result.message if result else "Unknown error"
                 logger.error(f"Login failed: {error_msg}")
+                self.last_error = error_msg
                 return False
                 
         except ImportError:
             logger.error("fubon-neo package not installed. Run: pip install fubon-neo")
+            self.last_error = "fubon-neo package not installed"
             raise Exception("fubon-neo package not installed. Please install it first.")
         except Exception as e:
             logger.error(f"Login error: {str(e)}")
+            self.last_error = str(e)
             raise
     
     def logout(self) -> bool:

@@ -17,6 +17,7 @@ class LoginRequest(BaseModel):
     password: str = Field(..., description="密碼")
     cert_path: str = Field(..., description="憑證路徑")
     person_id: Optional[str] = Field(None, description="身分證字號")
+    cert_password: Optional[str] = Field(None, description="憑證密碼 (正式環境使用)")
     use_mock: Optional[bool] = Field(True, description="是否使用 Mock 模式（測試環境為 True，正式環境為 False）")
 
 

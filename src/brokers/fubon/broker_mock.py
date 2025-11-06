@@ -20,6 +20,7 @@ class FubonBroker:
         """初始化 Mock Broker"""
         self.is_logged_in = False
         self.user_id = None
+        self.last_error: Optional[str] = None
         logger.info("Mock FubonBroker initialized")
     
     def login(self, user_id: str, password: str, cert_path: str, person_id: Optional[str] = None) -> bool:
@@ -27,6 +28,7 @@ class FubonBroker:
         logger.info(f"Mock login with user_id: {user_id}")
         self.is_logged_in = True
         self.user_id = user_id
+        self.last_error = None
         return True
     
     def logout(self) -> bool:
@@ -34,6 +36,7 @@ class FubonBroker:
         logger.info("Mock logout")
         self.is_logged_in = False
         self.user_id = None
+        self.last_error = None
         return True
     
     # 市場行情功能

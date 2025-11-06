@@ -6,7 +6,8 @@ function LoginPanel({ onLogin, loading, currentEnv }) {
     user_id: 'test_user',
     password: 'test_password',
     cert_path: '/tmp/test.pfx',
-    person_id: ''
+    person_id: '',
+    cert_password: ''
   });
   const [certFile, setCertFile] = useState(null);
   const [message, setMessage] = useState(null);
@@ -121,6 +122,22 @@ function LoginPanel({ onLogin, loading, currentEnv }) {
               onChange={handleChange}
               placeholder="選填"
             />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">憑證密碼 {currentEnv === 'production' ? '*' : ''}</label>
+            <input
+              type="password"
+              name="cert_password"
+              className="form-input"
+              value={formData.cert_password}
+              onChange={handleChange}
+              placeholder={currentEnv === 'production' ? '正式環境必填' : '測試環境可留空'}
+              required={currentEnv === 'production'}
+            />
+            <small className="form-help">
+              正式環境登入需要提供對應的憑證密碼
+            </small>
           </div>
 
           {/* 憑證上傳方式選擇 */}
